@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  trans-rent-db:
+    container_name: trans-rent-db
+    image: mongo
+    restart: always
+    ports:
+      - '${MONGO_INITDB_PORT}:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      trans-rent-db-net:
+volumes:
+  mongo_data:
+networks:
+  trans-rent-db-net:
