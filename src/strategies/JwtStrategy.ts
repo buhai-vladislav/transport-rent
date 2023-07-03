@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const user = {
-      id: userResult._id,
+      id: userResult._id.toString(),
       email: userResult.email,
     };
 
