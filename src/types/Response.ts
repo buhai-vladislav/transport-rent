@@ -12,7 +12,7 @@ export class SignInResult extends TokenPair {
 
 export class ResponseBody<T> {
   message: string;
-  status: HttpStatus;
+  statusCode: HttpStatus;
   data?: T;
   error?: any;
 }

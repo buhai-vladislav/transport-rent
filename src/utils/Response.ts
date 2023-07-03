@@ -14,11 +14,11 @@ export class ResponseResult {
    */
   static sendSuccess<T>(
     res: Response,
-    status: HttpStatus,
+    statusCode: HttpStatus,
     message: string,
     data: object,
   ): Response<ResponseBody<T>> {
-    return res.status(status).json({ message, status, data });
+    return res.status(statusCode).json({ message, statusCode, data });
   }
 
   /**
@@ -32,10 +32,10 @@ export class ResponseResult {
    */
   static sendError(
     res: Response,
-    status: HttpStatus,
+    statusCode: HttpStatus,
     message: string,
-    error?: object,
+    error?: object | string,
   ): Response<ResponseBody<undefined>> {
-    return res.status(status).json({ message, status, error });
+    return res.status(statusCode).json({ message, statusCode, error });
   }
 }
