@@ -56,7 +56,7 @@ export class AuthService {
         );
       }
       const { password: _, ...newUser } = user.toObject();
-      const payload: JwtPayload = { id: user.id, email };
+      const payload: JwtPayload = { id: user._id.toString(), email };
 
       const tokenPair = await this.tokenService.createTokenPair(payload);
       await this.tokenModel.create({ token: tokenPair.refreshToken });
