@@ -1,6 +1,6 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './User';
-import { Schema as MongooseSchema } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 import { Transport } from './Transport';
 
 @Schema({ timestamps: true })
@@ -20,3 +20,6 @@ export class Rent {
   @Prop({ required: true, type: Date })
   stoppedAt?: Date;
 }
+
+export const RentSchema = SchemaFactory.createForClass(Rent);
+export type RentDocument = HydratedDocument<Rent>;
