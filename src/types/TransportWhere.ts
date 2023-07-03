@@ -1,4 +1,4 @@
-import { TransportType } from 'src/db/schemas/Transport';
+import { LicenceType, TransportType } from '../db/schemas/Transport';
 import { Where } from './Where';
 
 export class TransportWhere extends Where {
@@ -7,5 +7,5 @@ export class TransportWhere extends Where {
   color?: string;
   powerRange?: [number, number];
   type?: TransportType;
-  licenceType?: TransportType;
+  licenceType?: LicenceType;
 }
