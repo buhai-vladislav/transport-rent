@@ -6,6 +6,7 @@ import { TokenModule } from './Token';
 import { TransportModule } from './Transport';
 import { FileModule } from './File';
 import { AuthModule } from './Auth';
+import { RentModule } from './Rent';
 
 @Module({
   imports: [
@@ -18,8 +19,15 @@ import { AuthModule } from './Auth';
     TransportModule,
     FileModule,
     AuthModule,
+    RentModule,
   ],
   controllers: [],
   providers: [],
 })
-export class ApplicationModule {}
+export class ApplicationModule {
+  static port: number;
+
+  constructor() {
+    ApplicationModule.port = Number.parseInt(process.env.PORT) || 3000;
+  }
+}
