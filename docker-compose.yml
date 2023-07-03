@@ -33,5 +33,6 @@ services:
       retries: 3
 volumes:
   mongo_data:
+  minio-storage:
 networks:
   trans-rent-db-net:
