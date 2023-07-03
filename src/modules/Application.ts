@@ -5,6 +5,7 @@ import { UserModule } from './User';
 import { TokenModule } from './Token';
 import { TransportModule } from './Transport';
 import { FileModule } from './File';
+import { AuthModule } from './Auth';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { FileModule } from './File';
     TokenModule,
     TransportModule,
     FileModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
