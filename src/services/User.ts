@@ -72,20 +72,18 @@ export class UserService {
     try {
       const { email, name } = updateUserDto;
 
-      const user = await this.userModel.findOneAndUpdate(
-        { $and: [{ _id: { $eq: userId } }] },
-        { $set: { email, name } },
-        { rawResult: true },
-      );
+      const user = await this.userModel.findByIdAndUpdate(userId, {
+        $set: { email, name },
+      });
 
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.OK,
         'User updated successfully.',
         {
-          ...user.value,
-          name: name ?? user.value.name,
-          email: email ?? user.value.email,
+          ...user.toObject(),
+          name: name ?? user.name,
+          email: email ?? user.email,
           password: undefined,
         },
       );
@@ -123,7 +121,7 @@ export class UserService {
         );
       }
 
-      const { password, ...newUser } = user;
+      const { password, ...newUser } = user.toObject();
 
       return ResponseResult.sendSuccess(
         res,

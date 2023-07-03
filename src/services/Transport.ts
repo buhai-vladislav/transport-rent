@@ -97,7 +97,7 @@ export class TransportService {
         HttpStatus.OK,
         'Transport updated successfully.',
         {
-          ...updatedTransport,
+          ...updatedTransport.toObject(),
           ...transport,
           description: {
             ...updatedTransport.description,
