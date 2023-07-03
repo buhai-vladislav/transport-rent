@@ -28,6 +28,6 @@ export class ApplicationModule {
   static port: number;
 
   constructor() {
-    ApplicationModule.port = Number.parseInt(process.env.PORT) || 3000;
+    ApplicationModule.port = Number.parseInt(process.env.SERVICE_PORT) || 3000;
   }
 }

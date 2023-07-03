@@ -55,7 +55,7 @@ export class AuthService {
           'Email or password is incorrect.',
         );
       }
-      const { password: _, ...newUser } = user;
+      const { password: _, ...newUser } = user.toObject();
       const payload: JwtPayload = { id: user.id, email };
 
       const tokenPair = await this.tokenService.createTokenPair(payload);
@@ -72,7 +72,7 @@ export class AuthService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -112,7 +112,7 @@ export class AuthService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }

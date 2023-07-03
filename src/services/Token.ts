@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -26,9 +27,12 @@ export class TokenService {
 
   public async createTokenPair(payload: JwtPayload): Promise<TokenPair> {
     try {
-      const accessToken = await this.jwtService.signAsync(payload);
+      const accessToken = await this.jwtService.signAsync(payload, {
+        secret: process.env.ACCESS_TOKEN_SECRET,
+      });
       const refreshToken = await this.jwtService.signAsync(payload, {
         expiresIn: '7d',
+        secret: process.env.ACCESS_TOKEN_SECRET,
       });
 
       return { accessToken, refreshToken };
@@ -46,6 +50,14 @@ export class TokenService {
       const token = await this.tokenModel.findOne({
         $and: [{ token: { $eq: refreshToken } }],
       });
+
+      if (!token) {
+        return ResponseResult.sendError(
+          res,
+          HttpStatus.BAD_REQUEST,
+          'Invalid token.',
+        );
+      }
       const payload = await this.verifyToken(token.token);
 
       const tokenPair = await this.createTokenPair({
@@ -64,13 +76,20 @@ export class TokenService {
       );
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error);
+      return ResponseResult.sendError(
+        res,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Internal server error.',
+        error?.message ?? error,
+      );
     }
   }
 
   public async verifyToken(token: string): Promise<JwtPayload> {
     try {
-      const payload = await this.jwtService.verifyAsync(token);
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.ACCESS_TOKEN_SECRET,
+      });
 
       if (!payload) {
         throw new BadRequestException('Token is expired.');

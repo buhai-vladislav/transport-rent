@@ -54,7 +54,7 @@ export class FileService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -90,7 +90,7 @@ export class FileService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error',
-        error,
+        error?.message ?? error,
       );
     }
   }

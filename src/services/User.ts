@@ -37,7 +37,7 @@ export class UserService {
         password: passHash,
       });
 
-      const { password: _, ...result } = user;
+      const { password: _, ...result } = user.toObject();
 
       return ResponseResult.sendSuccess(
         res,
@@ -51,7 +51,7 @@ export class UserService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -95,7 +95,7 @@ export class UserService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -137,7 +137,7 @@ export class UserService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -187,7 +187,7 @@ export class UserService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }

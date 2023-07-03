@@ -56,7 +56,7 @@ export class TransportService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -111,7 +111,7 @@ export class TransportService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -150,7 +150,7 @@ export class TransportService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -189,7 +189,7 @@ export class TransportService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -247,7 +247,7 @@ export class TransportService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }

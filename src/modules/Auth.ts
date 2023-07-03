@@ -6,8 +6,10 @@ import { AuthService } from '../services/Auth';
 import { TokenModule } from './Token';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthCotroller } from '../controllers/Auth';
+import { AuthController } from '../controllers/Auth';
 import { UserService } from '../services/User';
+import { ConfigModule } from '@nestjs/config';
+import { JwtStrategy } from 'src/strategies/JwtStrategy';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { UserService } from '../services/User';
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },
     ]),
+    ConfigModule.forRoot(),
     PassportModule.register({
       defaultStrategy: ['jwt'],
       property: 'user',
@@ -27,7 +30,8 @@ import { UserService } from '../services/User';
       },
     }),
   ],
-  providers: [AuthService, UserService],
-  controllers: [AuthCotroller],
+  controllers: [AuthController],
+  providers: [AuthService, UserService, JwtStrategy],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

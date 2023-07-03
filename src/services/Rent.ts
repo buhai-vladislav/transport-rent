@@ -55,7 +55,7 @@ export class RentService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -91,7 +91,7 @@ export class RentService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
@@ -147,7 +147,7 @@ export class RentService {
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Internal server error.',
-        error,
+        error?.message ?? error,
       );
     }
   }
