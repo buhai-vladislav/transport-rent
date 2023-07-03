@@ -2,10 +2,20 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MinioService } from 'nestjs-minio-client';
 import { FileTypes, IBufferedFile } from '../types/File';
 import * as crypto from 'crypto';
+import { policy } from 'src/configs/minio';
 
 @Injectable()
 export class MinioClientService {
-  constructor(private readonly minio: MinioService) {}
+  constructor(private readonly minio: MinioService) {
+    this.minio.client.setBucketPolicy(
+      process.env.MINIO_BUCKET_NAME,
+      JSON.stringify(policy),
+      (error) => {
+        if (error) throw error;
+        console.log('Bucket policy set');
+      },
+    );
+  }
   private readonly bucketName = process.env.MINIO_BUCKET_NAME;
 
   public async upload(
