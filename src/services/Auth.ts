@@ -2,14 +2,13 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model } from 'mongoose';
-import { User } from 'src/db/schemas/User';
-import { SigninDto } from 'src/dtos/Signin';
-import { JwtPayload } from 'src/types/JwtPayload';
-import { Hashing } from 'src/utils/Hashing';
-import { ResponseResult } from 'src/utils/Response';
+import { User } from '../db/schemas/User';
+import { SigninDto } from '../dtos/Signin';
+import { Hashing } from '../utils/Hashing';
+import { ResponseResult } from '../utils/Response';
 import { TokenService } from './Token';
-import { Token } from 'src/db/schemas/Token';
-import { ResponseBody } from 'src/types/Response';
+import { Token } from '../db/schemas/Token';
+import { ResponseBody, SignInResult, JwtPayload } from '../types';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +28,10 @@ export class AuthService {
    * @param {Response} res - the response object
    * @return {Promise<any>} a promise that resolves to the response result
    */
-  public async signin(signinDto: SigninDto, res: Response) {
+  public async signin(
+    signinDto: SigninDto,
+    res: Response,
+  ): Promise<Response<ResponseBody<SignInResult>>> {
     try {
       const { email, password } = signinDto;
       const user = await this.userModel.findOne({
@@ -85,7 +87,7 @@ export class AuthService {
   public async logout(
     refreshToken: string,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<undefined>>> {
     try {
       const token = await this.tokenModel.findOneAndDelete({
         $and: [{ token: { $eq: refreshToken } }],
@@ -103,7 +105,7 @@ export class AuthService {
         res,
         HttpStatus.OK,
         'Logout successfully.',
-        null,
+        undefined,
       );
     } catch (error) {
       return ResponseResult.sendError(

@@ -12,12 +12,12 @@ export class ResponseResult {
    * @param {object} data - The data to be included in the response.
    * @return {Response<ResponseBody>} The response object.
    */
-  static sendSuccess(
+  static sendSuccess<T>(
     res: Response,
     status: HttpStatus,
     message: string,
     data: object,
-  ): Response<ResponseBody> {
+  ): Response<ResponseBody<T>> {
     return res.status(status).json({ message, status, data });
   }
 
@@ -35,7 +35,7 @@ export class ResponseResult {
     status: HttpStatus,
     message: string,
     error?: object,
-  ): Response<ResponseBody> {
+  ): Response<ResponseBody<undefined>> {
     return res.status(status).json({ message, status, error });
   }
 }

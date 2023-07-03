@@ -12,15 +12,24 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { LicenceType, TransportType } from '../db/schemas/Transport';
+import {
+  LicenceType,
+  TransportDocument,
+  TransportType,
+} from '../db/schemas/Transport';
 import { CreateTransportDto, UpdateTransportDto } from '../dtos';
 import { TransportService } from '../services/Transport';
-import { ResponseBody, TransportWhere } from '../types';
+import {
+  RemoveResult,
+  ResponseBody,
+  ItemsPaginated,
+  TransportWhere,
+} from '../types';
 import { SortOrder } from '../types/Where';
 import {
   DEFAULT_PAGINATION_PAGE,
   DEFAULT_PAGINATION_LIMIT,
-} from 'src/utils/constants';
+} from '../utils/constants';
 
 @Controller('transports')
 export class TransportController {
@@ -30,7 +39,7 @@ export class TransportController {
   public async create(
     @Body() createTransportDto: CreateTransportDto,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TransportDocument>>> {
     return this.transportService.create(createTransportDto, res);
   }
 
@@ -39,7 +48,7 @@ export class TransportController {
     @Param('id') id: string,
     @Body() updateTrasnportDto: UpdateTransportDto,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TransportDocument>>> {
     return this.transportService.update(id, updateTrasnportDto, res);
   }
 
@@ -47,7 +56,7 @@ export class TransportController {
   public async delete(
     @Param('id') id: string,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<RemoveResult>>> {
     return this.transportService.delete(id, res);
   }
 
@@ -55,7 +64,7 @@ export class TransportController {
   public async findById(
     @Param('id') id: string,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TransportDocument>>> {
     return this.transportService.findOne({ $and: [{ _id: { $eq: id } }] }, res);
   }
 
@@ -79,7 +88,7 @@ export class TransportController {
     @Query('priceRange') priceRange: [number, number],
     @Query('maxSpeed') maxSpeed: number,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<ItemsPaginated<TransportDocument>>>> {
     const where: TransportWhere = {
       color,
       licenceType,

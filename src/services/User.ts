@@ -1,19 +1,20 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { User } from '../db/schemas/User';
+import { User, UserDocument } from '../db/schemas/User';
 import { CreateUserDto } from '../dtos/CreateUser';
 import { ResponseResult } from '../utils/Response';
 import { Response } from 'express';
 import { Hashing } from '../utils/Hashing';
-import { ResponseBody } from '../types/Response';
+import { RemoveResult, ResponseBody } from '../types/Response';
 import { UpdateUserDto } from 'src/dtos/UpdateUser';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  private logger: Logger;
+  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
+    this.logger = new Logger(UserService.name);
+  }
 
   /**
    * Creates a new user.
@@ -25,7 +26,7 @@ export class UserService {
   public async create(
     createUserDto: CreateUserDto,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
       const { email, name, password } = createUserDto;
       const passHash = await Hashing.generatePasswordHash(password);
@@ -36,13 +37,16 @@ export class UserService {
         password: passHash,
       });
 
+      const { password: _, ...result } = user;
+
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.CREATED,
         'User created successfully.',
-        { created: !!user },
+        result,
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -64,7 +68,7 @@ export class UserService {
     userId: string,
     updateUserDto: UpdateUserDto,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
       const { email, name } = updateUserDto;
 
@@ -86,6 +90,7 @@ export class UserService {
         },
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -105,7 +110,7 @@ export class UserService {
   public async findOne(
     options: FilterQuery<User>,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
       const user = await this.userModel.findOne(options);
 
@@ -127,6 +132,7 @@ export class UserService {
         newUser,
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -148,7 +154,7 @@ export class UserService {
     userId: string,
     updateUserDto: UpdateUserDto,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<RemoveResult>>> {
     try {
       const { password } = updateUserDto;
       const passHash = await Hashing.generatePasswordHash(password);
@@ -172,10 +178,11 @@ export class UserService {
         HttpStatus.OK,
         'User updated successfully.',
         {
-          affected: !!user,
+          isAffected: !!user,
         },
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,

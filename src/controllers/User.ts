@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Put, Req, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { UpdateUserDto } from 'src/dtos/UpdateUser';
-import { UserService } from 'src/services/User';
-import { ResponseBody } from 'src/types/Response';
+import { UserDocument } from '../db/schemas/User';
+import { UpdateUserDto } from '../dtos/UpdateUser';
+import { UserService } from '../services/User';
+import { ResponseBody } from '../types/Response';
 
 @Controller('users')
 export class UserController {
@@ -12,7 +13,7 @@ export class UserController {
   public async me(
     @Req() req: any,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<UserDocument>>> {
     const id = req?.user?.id;
     return this.userService.findOne({ $and: [{ _id: { $eq: id } }] }, res);
   }
@@ -22,7 +23,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: any,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<UserDocument>>> {
     const id = req?.user?.id;
     return this.userService.updateUser(id, updateUserDto, res);
   }

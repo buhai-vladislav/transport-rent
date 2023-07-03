@@ -1,21 +1,28 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryOptions } from 'mongoose';
-import { Transport } from '../db/schemas/Transport';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Transport, TransportDocument } from '../db/schemas/Transport';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateTransportDto } from '../dtos/CreateTransport';
-import { ResponseResult } from 'src/utils/Response';
+import { ResponseResult } from '../utils/Response';
 import { Response } from 'express';
-import { ResponseBody } from 'src/types/Response';
-import { UpdateTransportDto } from 'src/dtos/UpdateTransport';
-import { TransportWhere } from 'src/types/TransportWhere';
-import { PaginationMeta } from 'src/types/Pagination';
+import {
+  RemoveResult,
+  ResponseBody,
+  ItemsPaginated,
+  TransportWhere,
+  PaginationMeta,
+} from '../types';
+import { UpdateTransportDto } from '../dtos/UpdateTransport';
 
 @Injectable()
 export class TransportService {
+  private logger: Logger;
   constructor(
     @InjectModel(Transport.name)
     private readonly transportModel: Model<Transport>,
-  ) {}
+  ) {
+    this.logger = new Logger(TransportService.name);
+  }
 
   /**
    * Creates a transport.
@@ -27,7 +34,7 @@ export class TransportService {
   public async create(
     createTransportDto: CreateTransportDto,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TransportDocument>>> {
     try {
       const { title, price, status, description } = createTransportDto;
       const transport = await this.transportModel.create({
@@ -44,6 +51,7 @@ export class TransportService {
         transport,
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -98,6 +106,7 @@ export class TransportService {
         },
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -117,7 +126,7 @@ export class TransportService {
   public async delete(
     id: string,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<RemoveResult>>> {
     try {
       const deletedTransport = await this.transportModel.findByIdAndDelete(id);
 
@@ -136,6 +145,7 @@ export class TransportService {
         { isAffected: !!deletedTransport },
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -155,7 +165,7 @@ export class TransportService {
   public async findOne(
     options: QueryOptions<Transport>,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TransportDocument>>> {
     try {
       const transport = await this.transportModel.findOne(options);
 
@@ -174,6 +184,7 @@ export class TransportService {
         transport,
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -193,7 +204,7 @@ export class TransportService {
   public async findPaginated(
     where: TransportWhere,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<ItemsPaginated<TransportDocument>>>> {
     try {
       const { limit, page, sortOrder, sortKey } = where;
       const options: QueryOptions<Transport> = this.configureOptions(where);
@@ -231,6 +242,7 @@ export class TransportService {
         },
       );
     } catch (error) {
+      this.logger.error(error);
       return ResponseResult.sendError(
         res,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -246,7 +258,7 @@ export class TransportService {
    * @param {TransportWhere} where - The object containing the configuration options.
    * @return {QueryOptions<Transport>} The configured options object.
    */
-  private configureOptions(where: TransportWhere) {
+  private configureOptions(where: TransportWhere): QueryOptions<Transport> {
     const {
       color,
       licenceType,

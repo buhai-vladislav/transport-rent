@@ -10,9 +10,9 @@ import { JwtPayload } from '../types/JwtPayload';
 import { InjectModel } from '@nestjs/mongoose';
 import { Token } from '../db/schemas/Token';
 import { Model } from 'mongoose';
-import { ResponseResult } from 'src/utils/Response';
+import { ResponseResult } from '../utils/Response';
 import { Response } from 'express';
-import { ResponseBody } from 'src/types/Response';
+import { ResponseBody } from '../types';
 
 @Injectable()
 export class TokenService {
@@ -41,7 +41,7 @@ export class TokenService {
   public async getNewTokenPair(
     refreshToken: string,
     res: Response,
-  ): Promise<Response<ResponseBody>> {
+  ): Promise<Response<ResponseBody<TokenPair>>> {
     try {
       const token = await this.tokenModel.findOne({
         $and: [{ token: { $eq: refreshToken } }],
