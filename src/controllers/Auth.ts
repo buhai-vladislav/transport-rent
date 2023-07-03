@@ -10,7 +10,7 @@ import { UserDocument } from '../db/schemas/User';
 import { TokenPair, ResponseBody, SignInResult } from '../types';
 
 @Controller('auth')
-export class AuthCotroller {
+export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
