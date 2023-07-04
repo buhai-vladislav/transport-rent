@@ -9,16 +9,16 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateRentDto {
   @IsNotEmpty()
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: '#FF5733 ', type: String })
   transportId: string;
 
   @IsOptional()
   @IsDate()
-  @ApiProperty()
+  @ApiProperty({ type: Date, example: new Date() })
   fromDate?: Date;
 
   @IsOptional()
   @IsDate()
-  @ApiProperty()
+  @ApiProperty({ example: new Date() })
   toDate?: Date;
 }
