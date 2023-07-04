@@ -9,7 +9,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from '../controllers/Auth';
 import { UserService } from '../services/User';
 import { ConfigModule } from '@nestjs/config';
-import { JwtStrategy } from 'src/strategies/JwtStrategy';
+import { JwtStrategy } from '../strategies/JwtStrategy';
+import { File, FileSchema } from '../db/schemas/File';
+import { MinioClientModule } from './Minio';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { JwtStrategy } from 'src/strategies/JwtStrategy';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },
+      { name: File.name, schema: FileSchema },
     ]),
     ConfigModule.forRoot(),
     PassportModule.register({
@@ -29,6 +32,7 @@ import { JwtStrategy } from 'src/strategies/JwtStrategy';
         expiresIn: process.env.TOKEN_EXPIRATION_TIME || '24h',
       },
     }),
+    MinioClientModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, UserService, JwtStrategy],
