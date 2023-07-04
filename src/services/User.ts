@@ -4,15 +4,22 @@ import { FilterQuery, Model } from 'mongoose';
 import { User, UserDocument } from '../db/schemas/User';
 import { CreateUserDto } from '../dtos/CreateUser';
 import { ResponseResult } from '../utils/Response';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Hashing } from '../utils/Hashing';
 import { RemoveResult, ResponseBody } from '../types/Response';
-import { UpdateUserDto } from 'src/dtos/UpdateUser';
+import { UpdateUserDto } from '../dtos/UpdateUser';
+import { File, FileDocument } from '../db/schemas/File';
+import { getImageRootPath } from '../utils/utils';
+import { MinioClientService } from './Minio';
 
 @Injectable()
 export class UserService {
   private logger: Logger;
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(File.name) private readonly fileModel: Model<File>,
+    private readonly minioClientService: MinioClientService,
+  ) {
     this.logger = new Logger(UserService.name);
   }
 
@@ -26,10 +33,13 @@ export class UserService {
   public async create(
     createUserDto: CreateUserDto,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
-      const { email, name, password } = createUserDto;
+      const { email, name, password, imageId } = createUserDto;
       const passHash = await Hashing.generatePasswordHash(password);
+
+      const file = await this.fileModel.findById(imageId);
 
       const user = await this.userModel.create({
         email,
@@ -37,13 +47,25 @@ export class UserService {
         password: passHash,
       });
 
+      if (file && user) {
+        await this.userModel.findByIdAndUpdate(user._id, {
+          $set: { image: file },
+        });
+      }
+
       const { password: _, ...result } = user.toObject();
 
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.CREATED,
         'User created successfully.',
-        result,
+        {
+          ...result,
+          image: {
+            ...file.toObject(),
+            fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
+          },
+        },
       );
     } catch (error) {
       this.logger.error(error);
@@ -68,13 +90,39 @@ export class UserService {
     userId: string,
     updateUserDto: UpdateUserDto,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
-      const { email, name } = updateUserDto;
+      const { email, name, imageId } = updateUserDto;
+      let file: FileDocument;
 
-      const user = await this.userModel.findByIdAndUpdate(userId, {
-        $set: { email, name },
-      });
+      const user = await this.userModel.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            email,
+            name,
+          },
+        },
+        {
+          populate: { path: 'image' },
+        },
+      );
+
+      if (user && imageId) {
+        file = await this.fileModel.findById(imageId);
+
+        if (file) {
+          await Promise.all([
+            this.fileModel.deleteOne({
+              $and: [{ fileSrc: { $eq: user.image.fileSrc } }],
+            }),
+            this.minioClientService.delete(user.image.fileSrc),
+          ]);
+          user.image = file;
+          await user.save();
+        }
+      }
 
       return ResponseResult.sendSuccess(
         res,
@@ -85,6 +133,12 @@ export class UserService {
           name: name ?? user.name,
           email: email ?? user.email,
           password: undefined,
+          image: file
+            ? {
+                ...file.toObject(),
+                fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
+              }
+            : user.image,
         },
       );
     } catch (error) {
@@ -108,9 +162,14 @@ export class UserService {
   public async findOne(
     options: FilterQuery<User>,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<UserDocument>>> {
     try {
-      const user = await this.userModel.findOne(options);
+      const user = await this.userModel.findOne(
+        options,
+        {},
+        { populate: { path: 'image' } },
+      );
 
       if (!user) {
         return ResponseResult.sendError(
@@ -127,7 +186,18 @@ export class UserService {
         res,
         HttpStatus.OK,
         'User found successfully.',
-        newUser,
+        {
+          ...newUser,
+          image: newUser.image
+            ? {
+                ...newUser.image,
+                fileSrc: getImageRootPath(req).concat(
+                  '/',
+                  newUser.image.fileSrc,
+                ),
+              }
+            : undefined,
+        },
       );
     } catch (error) {
       this.logger.error(error);
