@@ -30,7 +30,25 @@ export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(
                     items: { $ref: getSchemaPath(dataDto) },
                   },
                   pagination: {
-                    $ref: getSchemaPath(PaginationMeta),
+                    type: 'object',
+                    properties: {
+                      count: {
+                        type: 'integer',
+                        example: 1,
+                      },
+                      limit: {
+                        type: 'integer',
+                        example: 10,
+                      },
+                      page: {
+                        type: 'integer',
+                        example: 1,
+                      },
+                      totalPages: {
+                        type: 'integer',
+                        example: 1,
+                      },
+                    },
                   },
                 },
               },
