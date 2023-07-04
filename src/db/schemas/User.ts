@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { File } from './File';
 
 export enum Role {
   ADMIN = 'ADMIN',
@@ -19,6 +20,13 @@ export class User {
 
   @Prop({ required: true, enum: Role, default: Role.USER })
   role: Role;
+
+  @Prop({
+    ref: 'File',
+    type: MongooseSchema.Types.ObjectId,
+    required: false,
+  })
+  image?: File;
 }
 
 export type UserDocument = HydratedDocument<User>;
