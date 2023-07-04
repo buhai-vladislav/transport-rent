@@ -13,8 +13,9 @@ import { UpdateUserDto } from '../dtos/UpdateUser';
 import { UserService } from '../services/User';
 import { ResponseBody } from '../types/Response';
 import { User } from '../types/User';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiErrorResponse, ApiSuccessResponse } from '../decorators';
+import { JWT_BEARER_SWAGGER_AUTH_NAME } from '../utils/constants';
 
 @ApiTags('User')
 @Controller('users')
@@ -29,6 +30,7 @@ export class UserController {
     'Internal server error.',
     HttpStatus.INTERNAL_SERVER_ERROR,
   )
+  @ApiBearerAuth(JWT_BEARER_SWAGGER_AUTH_NAME)
   @Get('me')
   public async me(
     @Req() req: any,
@@ -46,6 +48,7 @@ export class UserController {
     'Internal server error.',
     HttpStatus.INTERNAL_SERVER_ERROR,
   )
+  @ApiBearerAuth(JWT_BEARER_SWAGGER_AUTH_NAME)
   @Put()
   public async update(
     @Body() updateUserDto: UpdateUserDto,
