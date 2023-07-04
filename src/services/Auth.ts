@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Model } from 'mongoose';
 import { User } from '../db/schemas/User';
 import { SigninDto } from '../dtos/Signin';
@@ -9,6 +9,7 @@ import { ResponseResult } from '../utils/Response';
 import { TokenService } from './Token';
 import { Token } from '../db/schemas/Token';
 import { ResponseBody, SignInResult, JwtPayload } from '../types';
+import { getImageRootPath } from '../utils/utils';
 
 @Injectable()
 export class AuthService {
@@ -31,12 +32,17 @@ export class AuthService {
   public async signin(
     signinDto: SigninDto,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<SignInResult>>> {
     try {
       const { email, password } = signinDto;
-      const user = await this.userModel.findOne({
-        $and: [{ email: { $eq: email } }],
-      });
+      const user = await this.userModel.findOne(
+        {
+          $and: [{ email: { $eq: email } }],
+        },
+        {},
+        { populate: { path: 'image' } },
+      );
 
       if (!user) {
         return ResponseResult.sendError(
@@ -65,7 +71,21 @@ export class AuthService {
         res,
         HttpStatus.OK,
         'User found successfully.',
-        { user: newUser, ...tokenPair },
+        {
+          user: {
+            ...newUser,
+            image: newUser.image
+              ? {
+                  ...newUser.image,
+                  fileSrc: getImageRootPath(req).concat(
+                    '/',
+                    newUser.image.fileSrc,
+                  ),
+                }
+              : undefined,
+          },
+          ...tokenPair,
+        },
       );
     } catch (error) {
       return ResponseResult.sendError(
