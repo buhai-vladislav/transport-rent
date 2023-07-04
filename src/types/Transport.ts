@@ -3,6 +3,7 @@ import { Base } from './Base';
 import { TransportType } from 'src/db/schemas/Transport';
 import { LicenceType } from 'src/db/schemas/Transport';
 import { RentStatus } from 'src/db/schemas/Transport';
+import { File } from './File';
 
 class Description extends Base {
   @ApiProperty({ example: 'Car', type: String })
@@ -50,4 +51,7 @@ export class Transport extends Base {
     example: RentStatus.FREE,
   })
   status: RentStatus;
+
+  @ApiProperty({ type: File, required: false })
+  image?: File;
 }
