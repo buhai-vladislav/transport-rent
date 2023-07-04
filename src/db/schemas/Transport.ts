@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { FileDocument } from './File';
 
 export enum TransportType {
   CAR = 'CAR',
@@ -60,6 +61,13 @@ export class Transport {
 
   @Prop({ required: true, enum: RentStatus })
   status: RentStatus;
+
+  @Prop({
+    ref: 'File',
+    type: MongooseSchema.Types.ObjectId,
+    required: false,
+  })
+  image?: FileDocument;
 }
 
 export type TransportDocument = HydratedDocument<Transport>;
