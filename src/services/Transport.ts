@@ -4,7 +4,7 @@ import { Transport, TransportDocument } from '../db/schemas/Transport';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateTransportDto } from '../dtos/CreateTransport';
 import { ResponseResult } from '../utils/Response';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import {
   RemoveResult,
   ResponseBody,
@@ -13,6 +13,9 @@ import {
   PaginationMeta,
 } from '../types';
 import { UpdateTransportDto } from '../dtos/UpdateTransport';
+import { File, FileDocument } from '../db/schemas/File';
+import { MinioClientService } from './Minio';
+import { getImageRootPath } from '../utils/utils';
 
 @Injectable()
 export class TransportService {
@@ -20,6 +23,8 @@ export class TransportService {
   constructor(
     @InjectModel(Transport.name)
     private readonly transportModel: Model<Transport>,
+    @InjectModel(File.name) private readonly fileModel: Model<File>,
+    private readonly minioClientService: MinioClientService,
   ) {
     this.logger = new Logger(TransportService.name);
   }
@@ -34,21 +39,38 @@ export class TransportService {
   public async create(
     createTransportDto: CreateTransportDto,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<TransportDocument>>> {
     try {
-      const { title, price, status, description } = createTransportDto;
-      const transport = await this.transportModel.create({
-        title,
-        price,
-        status,
-        description,
-      });
+      const { title, price, status, description, imageId } = createTransportDto;
+
+      const [transport, file] = await Promise.all([
+        this.transportModel.create({
+          title,
+          price,
+          status,
+          description,
+        }),
+        this.fileModel.findById(imageId),
+      ]);
+
+      if (file && transport) {
+        await this.transportModel.findByIdAndUpdate(transport._id, {
+          $set: { image: file },
+        });
+      }
 
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.CREATED,
         'Transport created successfully.',
-        transport,
+        {
+          ...transport.toObject(),
+          image: {
+            ...file.toObject(),
+            fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
+          },
+        },
       );
     } catch (error) {
       this.logger.error(error);
@@ -75,14 +97,19 @@ export class TransportService {
     res: Response,
   ) {
     try {
-      const { description, transport } = updateTransportDto;
+      const { description, transport, imageId } = updateTransportDto;
+      let file: FileDocument;
 
-      const updatedTransport = await this.transportModel.findByIdAndUpdate(id, {
-        $set: {
-          ...transport,
-          description,
+      const updatedTransport = await this.transportModel.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            ...transport,
+            description,
+          },
         },
-      });
+        { populate: { path: 'image' } },
+      );
 
       if (!updatedTransport) {
         return ResponseResult.sendError(
@@ -90,6 +117,21 @@ export class TransportService {
           HttpStatus.NOT_FOUND,
           'Transport not found.',
         );
+      }
+
+      if (updatedTransport && imageId) {
+        file = await this.fileModel.findById(imageId);
+
+        if (file) {
+          await Promise.all([
+            this.fileModel.deleteOne({
+              $and: [{ fileSrc: { $eq: updatedTransport.image.fileSrc } }],
+            }),
+            this.minioClientService.delete(updatedTransport.image.fileSrc),
+          ]);
+          updatedTransport.image = file;
+          await updatedTransport.save();
+        }
       }
 
       return ResponseResult.sendSuccess(
@@ -128,7 +170,9 @@ export class TransportService {
     res: Response,
   ): Promise<Response<ResponseBody<RemoveResult>>> {
     try {
-      const deletedTransport = await this.transportModel.findByIdAndDelete(id);
+      const deletedTransport = await this.transportModel.findByIdAndDelete(id, {
+        populate: { path: 'image' },
+      });
 
       if (!deletedTransport) {
         return ResponseResult.sendError(
@@ -136,6 +180,15 @@ export class TransportService {
           HttpStatus.NOT_FOUND,
           'Transport not found.',
         );
+      }
+
+      if (deletedTransport) {
+        await Promise.all([
+          this.fileModel.deleteOne({
+            $and: [{ fileSrc: { $eq: deletedTransport.image.fileSrc } }],
+          }),
+          this.minioClientService.delete(deletedTransport.image.fileSrc),
+        ]);
       }
 
       return ResponseResult.sendSuccess(
@@ -165,9 +218,14 @@ export class TransportService {
   public async findOne(
     options: QueryOptions<Transport>,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<TransportDocument>>> {
     try {
-      const transport = await this.transportModel.findOne(options);
+      const transport = await this.transportModel.findOne(
+        options,
+        {},
+        { populate: { path: 'image' } },
+      );
 
       if (!transport) {
         return ResponseResult.sendError(
@@ -181,7 +239,13 @@ export class TransportService {
         res,
         HttpStatus.OK,
         'Transport found successfully.',
-        transport,
+        {
+          ...transport.toObject(),
+          image: {
+            ...transport.image.toObject(),
+            fileSrc: getImageRootPath(req).concat('/', transport.image.fileSrc),
+          },
+        },
       );
     } catch (error) {
       this.logger.error(error);
@@ -204,6 +268,7 @@ export class TransportService {
   public async findPaginated(
     where: TransportWhere,
     res: Response,
+    req: Request,
   ): Promise<Response<ResponseBody<ItemsPaginated<TransportDocument>>>> {
     try {
       const { limit, page, sortOrder, sortKey } = where;
@@ -232,12 +297,20 @@ export class TransportService {
         count,
       };
 
+      const mapped = transports.map((item) => ({
+        ...item.toObject(),
+        image: {
+          ...item.image.toObject(),
+          fileSrc: getImageRootPath(req).concat('/', item.image.fileSrc),
+        },
+      }));
+
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.OK,
         'Transport found successfully.',
         {
-          items: transports,
+          items: mapped,
           pagination,
         },
       );

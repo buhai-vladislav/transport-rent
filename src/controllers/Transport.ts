@@ -9,9 +9,10 @@ import {
   Post,
   Put,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import {
   LicenceType,
   TransportDocument,
@@ -39,8 +40,9 @@ export class TransportController {
   public async create(
     @Body() createTransportDto: CreateTransportDto,
     @Res() res: Response,
+    @Req() req: Request,
   ): Promise<Response<ResponseBody<TransportDocument>>> {
-    return this.transportService.create(createTransportDto, res);
+    return this.transportService.create(createTransportDto, res, req);
   }
 
   @Put('/:id')
@@ -64,8 +66,13 @@ export class TransportController {
   public async findById(
     @Param('id') id: string,
     @Res() res: Response,
+    @Req() req: Request,
   ): Promise<Response<ResponseBody<TransportDocument>>> {
-    return this.transportService.findOne({ $and: [{ _id: { $eq: id } }] }, res);
+    return this.transportService.findOne(
+      { $and: [{ _id: { $eq: id } }] },
+      res,
+      req,
+    );
   }
 
   @Get()
@@ -88,6 +95,7 @@ export class TransportController {
     @Query('priceRange') priceRange: [number, number],
     @Query('maxSpeed') maxSpeed: number,
     @Res() res: Response,
+    @Req() req: Request,
   ): Promise<Response<ResponseBody<ItemsPaginated<TransportDocument>>>> {
     const where: TransportWhere = {
       color,
@@ -102,6 +110,6 @@ export class TransportController {
       sortOrder,
       type,
     };
-    return this.transportService.findPaginated(where, res);
+    return this.transportService.findPaginated(where, res, req);
   }
 }
