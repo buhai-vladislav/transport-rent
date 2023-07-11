@@ -1,12 +1,12 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Rent } from 'src/db/schemas/Rent';
+import { Rent } from '../db/schemas/Rent';
 import { CreateRentDto, UpdateRentDto } from '../dtos';
 import { ResponseResult } from '../utils/Response';
 import { Response } from 'express';
 import { RentStatus, Transport } from '../db/schemas/Transport';
-import { PaginationMeta, Where } from 'src/types';
+import { PaginationMeta, AffectedResult, ResponseBody, Where } from '../types';
 
 @Injectable()
 export class RentService {
@@ -19,6 +19,14 @@ export class RentService {
     this.logger = new Logger(RentService.name);
   }
 
+  /**
+   * Create a new rent for a user.
+   *
+   * @param {string} userId - The ID of the user.
+   * @param {CreateRentDto} createRentDto - The DTO containing the details of the rent.
+   * @param {Response} res - The response object.
+   * @return {Promise<void>} A Promise that resolves when the rent is created.
+   */
   async create(userId: string, createRentDto: CreateRentDto, res: Response) {
     try {
       const { transportId, fromDate, toDate } = createRentDto;
@@ -60,6 +68,13 @@ export class RentService {
     }
   }
 
+  /**
+   * Updates a rent record in the database.
+   *
+   * @param {string} id - The ID of the rent record to update.
+   * @param {UpdateRentDto} updateRentDto - The data to update the rent record with.
+   * @param {Response} res - The response object to send the result to.
+   */
   public async update(id: string, updateRentDto: UpdateRentDto, res: Response) {
     try {
       const { fromDate, toDate, stoppedAt, transportId } = updateRentDto;
@@ -85,6 +100,20 @@ export class RentService {
           $set: { status: RentStatus.FREE },
         });
       }
+
+      await rent.save();
+
+      return ResponseResult.sendSuccess(
+        res,
+        HttpStatus.OK,
+        'Rent updated successfully.',
+        {
+          ...rent.toObject(),
+          fromDate: fromDate ?? rent.fromDate,
+          toDate: toDate ?? rent.toDate,
+          stoppedAt: stoppedAt ?? rent.stoppedAt,
+        },
+      );
     } catch (error) {
       this.logger.error(error);
       return ResponseResult.sendError(
@@ -141,6 +170,30 @@ export class RentService {
           pagination,
         },
       );
+    } catch (error) {
+      this.logger.error(error);
+      return ResponseResult.sendError(
+        res,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Internal server error.',
+        error?.message ?? error,
+      );
+    }
+  }
+
+  public async checkIsCurrentUserRent(
+    userId: string,
+    transportId: string,
+    res: Response,
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
+    try {
+      const rent = await this.rentModel.findOne({
+        $and: [{ user: { $eq: userId } }, { transport: { $eq: transportId } }],
+      });
+
+      return ResponseResult.sendSuccess(res, HttpStatus.OK, 'Rent found.', {
+        isAffected: !!rent,
+      });
     } catch (error) {
       this.logger.error(error);
       return ResponseResult.sendError(
