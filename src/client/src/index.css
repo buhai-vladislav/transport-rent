@@ -7,6 +7,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.nextui-modal-body > div:nth-child(1) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nextui-input-disabled {
+  color: #7e868c !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
