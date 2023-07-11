@@ -75,7 +75,7 @@ export class CreateTransportDto {
   @IsNotEmpty()
   @IsEnum(RentStatus)
   @ApiProperty({ enum: RentStatus, default: RentStatus.FREE })
-  status: RentStatus;
+  status?: RentStatus = RentStatus.FREE;
 
   @IsString()
   @IsOptional()
