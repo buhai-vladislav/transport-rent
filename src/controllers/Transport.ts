@@ -22,7 +22,7 @@ import {
 import { CreateTransportDto, UpdateTransportDto } from '../dtos';
 import { TransportService } from '../services/Transport';
 import {
-  RemoveResult,
+  AffectedResult,
   ResponseBody,
   ItemsPaginated,
   TransportWhere,
@@ -125,7 +125,7 @@ export class TransportController {
   public async delete(
     @Param('id') id: string,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody<RemoveResult>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     return this.transportService.delete(id, res);
   }
 
@@ -259,17 +259,17 @@ export class TransportController {
       ParseIntPipe,
     )
     limit: number,
-    @Query('search') search: string,
-    @Query('sortOrder') sortOrder: SortOrder = SortOrder.ASC,
-    @Query('sortKey') sortKey: string,
-    @Query('type') type: TransportType,
-    @Query('color') color: string,
-    @Query('licenceType') licenceType: LicenceType,
-    @Query('powerRange') powerRange: [number, number],
-    @Query('priceRange') priceRange: [number, number],
-    @Query('maxSpeed') maxSpeed: number,
     @Res() res: Response,
     @Req() req: Request,
+    @Query('search') search?: string,
+    @Query('sortOrder') sortOrder?: SortOrder,
+    @Query('sortKey') sortKey?: string,
+    @Query('type') type?: TransportType,
+    @Query('color') color?: string,
+    @Query('licenceType') licenceType?: LicenceType,
+    @Query('powerRange') powerRange?: [number, number] | [string, string],
+    @Query('priceRange') priceRange?: [number, number] | [string, string],
+    @Query('maxSpeed') maxSpeed?: number,
   ): Promise<Response<ResponseBody<ItemsPaginated<TransportDocument>>>> {
     const where: TransportWhere = {
       color,
