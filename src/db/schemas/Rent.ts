@@ -17,7 +17,7 @@ export class Rent {
   @Prop({ required: false, type: Date })
   toDate?: Date;
 
-  @Prop({ required: true, type: Date })
+  @Prop({ required: false, type: Date })
   stoppedAt?: Date;
 }
 
