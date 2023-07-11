@@ -12,7 +12,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { File, FileDocument } from '../db/schemas/File';
 import { Model } from 'mongoose';
 import { ResponseResult } from '../utils/Response';
-import { ResponseBody, RemoveResult } from '../types';
+import { ResponseBody, AffectedResult } from '../types';
 
 @Injectable()
 export class FileService {
@@ -62,7 +62,7 @@ export class FileService {
   public async delete(
     fileId: string,
     res: Response,
-  ): Promise<Response<ResponseBody<RemoveResult>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     try {
       const file = await this.fileModel.findById(fileId);
 

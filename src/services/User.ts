@@ -6,7 +6,7 @@ import { CreateUserDto } from '../dtos/CreateUser';
 import { ResponseResult } from '../utils/Response';
 import { Request, Response } from 'express';
 import { Hashing } from '../utils/Hashing';
-import { RemoveResult, ResponseBody } from '../types/Response';
+import { AffectedResult, ResponseBody } from '../types/Response';
 import { UpdateUserDto } from '../dtos/UpdateUser';
 import { File, FileDocument } from '../db/schemas/File';
 import { getImageRootPath } from '../utils/utils';
@@ -61,10 +61,12 @@ export class UserService {
         'User created successfully.',
         {
           ...result,
-          image: {
-            ...file.toObject(),
-            fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
-          },
+          image: file
+            ? {
+                ...file?.toObject(),
+                fileSrc: getImageRootPath(req).concat('/', file?.fileSrc),
+              }
+            : undefined,
         },
       );
     } catch (error) {
@@ -222,7 +224,7 @@ export class UserService {
     userId: string,
     updateUserDto: UpdateUserDto,
     res: Response,
-  ): Promise<Response<ResponseBody<RemoveResult>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     try {
       const { password } = updateUserDto;
       const passHash = await Hashing.generatePasswordHash(password);
