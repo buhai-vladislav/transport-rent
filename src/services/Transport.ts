@@ -6,7 +6,7 @@ import { CreateTransportDto } from '../dtos/CreateTransport';
 import { ResponseResult } from '../utils/Response';
 import { Request, Response } from 'express';
 import {
-  RemoveResult,
+  AffectedResult,
   ResponseBody,
   ItemsPaginated,
   TransportWhere,
@@ -66,10 +66,12 @@ export class TransportService {
         'Transport created successfully.',
         {
           ...transport.toObject(),
-          image: {
-            ...file.toObject(),
-            fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
-          },
+          image: file
+            ? {
+                ...file.toObject(),
+                fileSrc: getImageRootPath(req).concat('/', file.fileSrc),
+              }
+            : undefined,
         },
       );
     } catch (error) {
@@ -168,7 +170,7 @@ export class TransportService {
   public async delete(
     id: string,
     res: Response,
-  ): Promise<Response<ResponseBody<RemoveResult>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     try {
       const deletedTransport = await this.transportModel.findByIdAndDelete(id, {
         populate: { path: 'image' },
@@ -284,6 +286,7 @@ export class TransportService {
       const [transports, count] = await Promise.all([
         this.transportModel
           .find(options)
+          .populate({ path: 'image' })
           .sort(sortOptions)
           .skip(skip)
           .limit(limit),
@@ -299,10 +302,12 @@ export class TransportService {
 
       const mapped = transports.map((item) => ({
         ...item.toObject(),
-        image: {
-          ...item.image.toObject(),
-          fileSrc: getImageRootPath(req).concat('/', item.image.fileSrc),
-        },
+        image: item.image
+          ? {
+              ...item.image.toObject(),
+              fileSrc: getImageRootPath(req).concat('/', item.image.fileSrc),
+            }
+          : undefined,
       }));
 
       return ResponseResult.sendSuccess(
@@ -344,29 +349,59 @@ export class TransportService {
     const options: QueryOptions<Transport> = { $and: [], $or: [] };
 
     if (color) {
-      options.$and.push({ color: { $eq: color } });
+      options.$and.push({ 'description.color': { $eq: color } });
     }
     if (licenceType) {
-      options.$and.push({ licenceType: { $eq: licenceType } });
+      options.$and.push({ 'description.licenceType': { $eq: licenceType } });
     }
-    if (priceRange) {
+    if (priceRange && Array.isArray(priceRange)) {
       options.$and.push({
-        price: { $gte: priceRange[0], $lte: priceRange[1] },
+        price: {
+          $gte:
+            typeof priceRange[0] === 'number'
+              ? priceRange[0]
+              : Number.parseInt(priceRange[0]),
+          $lte:
+            typeof priceRange[1] === 'number'
+              ? priceRange[1]
+              : Number.parseInt(priceRange[1]),
+        },
       });
     }
     if (maxSpeed) {
-      options.$and.push({ maxSpeed: { $gte: maxSpeed } });
-    }
-    if (powerRange) {
       options.$and.push({
-        power: { $gte: powerRange[0], $lte: powerRange[1] },
+        'description.maxSpeed': {
+          $gte:
+            typeof maxSpeed === 'number' ? maxSpeed : Number.parseInt(maxSpeed),
+        },
+      });
+    }
+    if (powerRange && Array.isArray(powerRange)) {
+      options.$and.push({
+        'description.power': {
+          $gte:
+            typeof powerRange[0] === 'number'
+              ? powerRange[0]
+              : Number.parseInt(powerRange[0]),
+          $lte:
+            typeof powerRange[1] === 'number'
+              ? powerRange[1]
+              : Number.parseInt(powerRange[1]),
+        },
       });
     }
     if (search) {
       options.$or.push({ title: { $regex: search, $options: 'i' } });
     }
     if (type) {
-      options.$and.push({ type: { $eq: type } });
+      options.$and.push({ 'description.type': { $eq: type } });
+    }
+
+    if (options.$and.length === 0) {
+      delete options.$and;
+    }
+    if (options.$or.length === 0) {
+      delete options.$or;
     }
 
     return options;
