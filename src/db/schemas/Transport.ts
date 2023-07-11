@@ -59,7 +59,7 @@ export class Transport {
   @Prop({ required: true, type: Description })
   description: Description;
 
-  @Prop({ required: true, enum: RentStatus })
+  @Prop({ required: true, enum: RentStatus, default: RentStatus.FREE })
   status: RentStatus;
 
   @Prop({
