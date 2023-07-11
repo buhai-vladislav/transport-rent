@@ -13,6 +13,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalGuards(new JwtAuthGuard(reflector));
 
+  app.enableCors({
+    origin: 'http://localhost:3000',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Transport Rent project API')
     .setDescription('The Transport Rent project API endpoints documentation.')
