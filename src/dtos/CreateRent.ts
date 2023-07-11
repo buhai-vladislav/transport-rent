@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,12 +13,12 @@ export class CreateRentDto {
   transportId: string;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   @ApiProperty({ type: Date, example: new Date() })
   fromDate?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   @ApiProperty({ example: new Date() })
   toDate?: Date;
 }
