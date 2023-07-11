@@ -22,7 +22,7 @@ import {
   JWT_BEARER_SWAGGER_AUTH_NAME,
 } from '../utils/constants';
 import { RentDocument } from '../db/schemas/Rent';
-import { ItemsPaginated, ResponseBody } from '../types';
+import { AffectedResult, ItemsPaginated, ResponseBody } from '../types';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -152,5 +152,28 @@ export class RentController {
       },
       res,
     );
+  }
+
+  @ApiOperation({ summary: 'Getting rent info for transport process.' })
+  @ApiSuccessResponse(
+    AffectedResult,
+    'The transport rent successfully retrieved.',
+    HttpStatus.OK,
+  )
+  @ApiErrorResponse(String, 'Unauthorized', HttpStatus.UNAUTHORIZED)
+  @ApiErrorResponse(
+    String,
+    'Internal server error.',
+    HttpStatus.INTERNAL_SERVER_ERROR,
+  )
+  @ApiBearerAuth(JWT_BEARER_SWAGGER_AUTH_NAME)
+  @Get('/:transportId')
+  public async checkIsCurrentUserRent(
+    @Param('transportId') transportId: string,
+    @Res() res: Response,
+    @Req() req: any,
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
+    const userId = req.user.id;
+    return this.rentService.checkIsCurrentUserRent(userId, transportId, res);
   }
 }
