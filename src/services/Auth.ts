@@ -57,7 +57,7 @@ export class AuthService {
       if (!isMatch) {
         return ResponseResult.sendError(
           res,
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.UNAUTHORIZED,
           'Email or password is incorrect.',
         );
       }
