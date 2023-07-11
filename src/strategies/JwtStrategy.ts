@@ -9,7 +9,6 @@ import { Model } from 'mongoose';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
-    console.log('JwtStrategy', process.env.ACCESS_TOKEN_SECRET);
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
