@@ -3,7 +3,8 @@ import { TokenPair } from './TokenPair';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './User';
 
-export class RemoveResult {
+export class AffectedResult {
+  @ApiProperty({ example: true })
   isAffected: boolean;
 }
 
