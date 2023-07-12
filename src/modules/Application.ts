@@ -7,6 +7,8 @@ import { TransportModule } from './Transport';
 import { FileModule } from './File';
 import { AuthModule } from './Auth';
 import { RentModule } from './Rent';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -20,6 +22,9 @@ import { RentModule } from './Rent';
     FileModule,
     AuthModule,
     RentModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'src/client/build'),
+    }),
   ],
   controllers: [],
   providers: [],
