@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   FormElement,
   Grid,
@@ -27,10 +28,12 @@ import {
   SortOrder,
   TransportType,
 } from '../../types/Transport';
+import { useAppSelector } from '../../store/hooks/hooks';
 
 export const Transports = () => {
   const [page, setPage] = useState(1);
   const [maxSpeed, setMaxSpeed] = useState('');
+  const { user } = useAppSelector((state) => state.user);
   const [type, setType] = useState<Set<string> | undefined>(undefined);
   const [licenceType, setLicenceType] = useState<Set<string> | undefined>();
   const [sortKey, setSortKey] = useState<Set<string> | undefined>();
@@ -158,6 +161,11 @@ export const Transports = () => {
         )}
       </div>
       <Card className="filters">
+        {user?.role === 'ADMIN' && (
+          <Button type="button" onPress={handleNavigate('/transports/create')}>
+            Add new
+          </Button>
+        )}
         <Select
           value={type}
           setValue={handleSelectChange(setType)}
