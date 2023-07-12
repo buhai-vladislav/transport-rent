@@ -151,12 +151,13 @@ export class RentController {
         sortOrder,
       },
       res,
+      req,
     );
   }
 
   @ApiOperation({ summary: 'Getting rent info for transport process.' })
   @ApiSuccessResponse(
-    AffectedResult,
+    Rent,
     'The transport rent successfully retrieved.',
     HttpStatus.OK,
   )
@@ -172,7 +173,7 @@ export class RentController {
     @Param('transportId') transportId: string,
     @Res() res: Response,
     @Req() req: any,
-  ): Promise<Response<ResponseBody<AffectedResult>>> {
+  ): Promise<Response<ResponseBody<RentDocument>>> {
     const userId = req.user.id;
     return this.rentService.checkIsCurrentUserRent(userId, transportId, res);
   }
