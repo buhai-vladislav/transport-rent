@@ -12,8 +12,8 @@ interface IRent extends IBase {
 
 interface IRentBody {
   transportId: string;
-  fromDate: Date;
-  toDate: Date;
+  fromDate?: Date;
+  toDate?: Date;
   stoppedAt?: Date;
 }
 
