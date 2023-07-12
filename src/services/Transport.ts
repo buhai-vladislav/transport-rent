@@ -16,6 +16,7 @@ import { UpdateTransportDto } from '../dtos/UpdateTransport';
 import { File, FileDocument } from '../db/schemas/File';
 import { MinioClientService } from './Minio';
 import { getImageRootPath } from '../utils/utils';
+import { Rent } from '../db/schemas/Rent';
 
 @Injectable()
 export class TransportService {
@@ -24,6 +25,7 @@ export class TransportService {
     @InjectModel(Transport.name)
     private readonly transportModel: Model<Transport>,
     @InjectModel(File.name) private readonly fileModel: Model<File>,
+    @InjectModel(Rent.name) private readonly rentModel: Model<Rent>,
     private readonly minioClientService: MinioClientService,
   ) {
     this.logger = new Logger(TransportService.name);
@@ -190,6 +192,7 @@ export class TransportService {
             $and: [{ fileSrc: { $eq: deletedTransport.image.fileSrc } }],
           }),
           this.minioClientService.delete(deletedTransport.image.fileSrc),
+          this.rentModel.deleteMany({ $and: [{ _id: { $eq: id } }] }),
         ]);
       }
 
