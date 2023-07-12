@@ -4,7 +4,6 @@ import { TransportForm } from '../TransportForm';
 import { validationSchema } from '../TransportForm/TransportForm.utils';
 import { ITransportFormProps } from '../TransportForm/TransportForm.props';
 import {
-  useCreateTransportMutation,
   useLazyGetSingleTransportQuery,
   useUpdateTransportMutation,
 } from '../../store/api/transport.api';
@@ -17,9 +16,14 @@ import { ITransport, LicenceType, TransportType } from '../../types/Transport';
 import { IMutation } from '../../types/RTK';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
-import { Loading } from '@nextui-org/react';
+import { Button, Loading, Modal, Text } from '@nextui-org/react';
 import { useAppSelector } from '../../store/hooks/hooks';
-import { useLazyGetRentInfoQuery } from '../../store/api/rent.api';
+import {
+  useLazyGetRentInfoQuery,
+  useUpdateRentMutation,
+} from '../../store/api/rent.api';
+import { IRent } from '../../types/Rent';
+import { getDateDiffInMinutes } from '../../utils/date';
 
 export const EditTransport = () => {
   const { id } = useParams();
@@ -27,10 +31,37 @@ export const EditTransport = () => {
   const [getTransport, { error: tError, data: transportData, isFetching }] =
     useLazyGetSingleTransportQuery();
   const [image, setImage] = useState<File | string>('');
+  const [opened, setOpened] = useState(false);
   const imageRef = useRef<AvatarEditor>(null);
   const [updateTransport, { error }] = useUpdateTransportMutation();
   const [data, uploadImage] = useUploadImage();
-  const [getRentInfo] = useLazyGetRentInfoQuery();
+  const [getRentInfo, { data: rentInfo }] = useLazyGetRentInfoQuery();
+  const [stopRent, { isLoading }] = useUpdateRentMutation();
+
+  const stopRentHandler = useCallback(async () => {
+    if (id && rentInfo?.data?._id) {
+      const response: IMutation<IResponse<IRent>> = await stopRent({
+        id: rentInfo?.data?._id,
+        stoppedAt: new Date(),
+        toDate: new Date(),
+        transportId: id,
+      });
+      if (response?.data?.data) {
+        toast('Rent stopped successfully', {
+          type: 'success',
+          position: 'bottom-center',
+        });
+      }
+      closeModal();
+    }
+  }, [id, rentInfo?.data]);
+
+  const openModal = useCallback(() => {
+    setOpened(true);
+  }, []);
+  const closeModal = useCallback(() => {
+    setOpened(false);
+  }, []);
 
   const onSubmit = useCallback(
     async ({
@@ -153,14 +184,62 @@ export const EditTransport = () => {
   }
 
   return (
-    <TransportForm
-      formik={formik}
-      image={image}
-      setImage={setImage}
-      imageRef={imageRef}
-      disabled={user?.role !== 'ADMIN'}
-      id={id}
-      rented={transportData?.data?.status !== 'FREE'}
-    />
+    <>
+      <TransportForm
+        formik={formik}
+        image={image}
+        setImage={setImage}
+        imageRef={imageRef}
+        disabled={user?.role !== 'ADMIN'}
+        id={id}
+        rented={transportData?.data?.status !== 'FREE'}
+        unRentButton={
+          rentInfo?.data ? (
+            <Button color="warning" type="button" onPress={openModal}>
+              Stop rent
+            </Button>
+          ) : null
+        }
+      />
+      <Modal
+        closeButton
+        onClose={closeModal}
+        open={opened}
+        blur
+        aria-labelledby="modal-rent"
+      >
+        <Modal.Header>
+          <Text id="modal-title" size={18}>
+            Stop renting the&nbsp;
+            <Text b size={18}>
+              {formik.values.title}
+            </Text>
+          </Text>
+        </Modal.Header>
+        <Modal.Body>
+          <Text css={{ textAlign: 'center' }}>
+            Your amount due is: &nbsp;
+            <Text b>
+              {transportData?.data?.price &&
+                rentInfo?.data?.fromDate &&
+                (transportData?.data?.price / 60) *
+                  getDateDiffInMinutes(
+                    new Date(rentInfo?.data?.fromDate),
+                    new Date(),
+                  )}
+            </Text>
+            $
+          </Text>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button auto flat color="error" onPress={closeModal}>
+            Close
+          </Button>
+          <Button auto onPress={stopRentHandler} disabled={isLoading}>
+            {isLoading ? <Loading size="sm" /> : 'Stop'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
