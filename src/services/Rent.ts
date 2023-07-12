@@ -1,12 +1,13 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Rent } from '../db/schemas/Rent';
+import { Rent, RentDocument } from '../db/schemas/Rent';
 import { CreateRentDto, UpdateRentDto } from '../dtos';
 import { ResponseResult } from '../utils/Response';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { RentStatus, Transport } from '../db/schemas/Transport';
-import { PaginationMeta, AffectedResult, ResponseBody, Where } from '../types';
+import { PaginationMeta, ResponseBody, Where, ItemsPaginated } from '../types';
+import { getImageRootPath } from '../utils/utils';
 
 @Injectable()
 export class RentService {
@@ -27,7 +28,11 @@ export class RentService {
    * @param {Response} res - The response object.
    * @return {Promise<void>} A Promise that resolves when the rent is created.
    */
-  async create(userId: string, createRentDto: CreateRentDto, res: Response) {
+  async create(
+    userId: string,
+    createRentDto: CreateRentDto,
+    res: Response,
+  ): Promise<Response<ResponseBody<RentDocument>>> {
     try {
       const { transportId, fromDate, toDate } = createRentDto;
       const transport = await this.transportModel.findById(transportId);
@@ -75,7 +80,11 @@ export class RentService {
    * @param {UpdateRentDto} updateRentDto - The data to update the rent record with.
    * @param {Response} res - The response object to send the result to.
    */
-  public async update(id: string, updateRentDto: UpdateRentDto, res: Response) {
+  public async update(
+    id: string,
+    updateRentDto: UpdateRentDto,
+    res: Response,
+  ): Promise<Response<ResponseBody<RentDocument>>> {
     try {
       const { fromDate, toDate, stoppedAt, transportId } = updateRentDto;
       const rent = await this.rentModel.findById(id);
@@ -133,7 +142,12 @@ export class RentService {
    * @param {Response} res - The response object to send the result back.
    * @return {Promise<void>} - A promise that resolves when the result is sent as a response.
    */
-  public async getRentList(userId: string, where: Where, res: Response) {
+  public async getRentList(
+    userId: string,
+    where: Where,
+    res: Response,
+    req: Request,
+  ): Promise<Response<ResponseBody<ItemsPaginated<RentDocument>>>> {
     try {
       const { limit, page, sortOrder, sortKey } = where;
       const skip = page >= 1 ? (page - 1) * limit : limit;
@@ -146,11 +160,20 @@ export class RentService {
 
       const [rents, count] = await Promise.all([
         this.rentModel
-          .find({ user: { _id: { $eq: userId } } })
+          .find(
+            { user: { $eq: userId } },
+            {},
+            {
+              populate: [
+                { path: 'transport', populate: { path: 'image' } },
+                { path: 'user' },
+              ],
+            },
+          )
           .sort(sortOptions)
           .limit(limit)
           .skip(skip),
-        this.rentModel.countDocuments({ user: { _id: { $eq: userId } } }),
+        this.rentModel.countDocuments({ user: { $eq: userId } }),
       ]);
 
       const totalPages = Math.ceil(count / limit);
@@ -161,12 +184,28 @@ export class RentService {
         count,
       };
 
+      const items = rents.map((rent) => {
+        return {
+          ...rent.toObject(),
+          transport: {
+            ...rent.transport.toObject(),
+            image: {
+              ...rent.transport.image.toObject(),
+              fileSrc: getImageRootPath(req).concat(
+                '/',
+                rent.transport.image.fileSrc,
+              ),
+            },
+          },
+        };
+      });
+
       return ResponseResult.sendSuccess(
         res,
         HttpStatus.OK,
         'Rent found successfully.',
         {
-          items: rents,
+          items,
           pagination,
         },
       );
@@ -185,15 +224,22 @@ export class RentService {
     userId: string,
     transportId: string,
     res: Response,
-  ): Promise<Response<ResponseBody<AffectedResult>>> {
+  ): Promise<Response<ResponseBody<RentDocument>>> {
     try {
       const rent = await this.rentModel.findOne({
-        $and: [{ user: { $eq: userId } }, { transport: { $eq: transportId } }],
+        $and: [
+          { user: { $eq: userId } },
+          { transport: { $eq: transportId } },
+          { stoppedAt: { $eq: null } },
+        ],
       });
 
-      return ResponseResult.sendSuccess(res, HttpStatus.OK, 'Rent found.', {
-        isAffected: !!rent,
-      });
+      return ResponseResult.sendSuccess(
+        res,
+        HttpStatus.OK,
+        'Rent found.',
+        rent,
+      );
     } catch (error) {
       this.logger.error(error);
       return ResponseResult.sendError(
