@@ -15,7 +15,12 @@ import { CreateUserDto } from '../dtos/CreateUser';
 import { PublicRoute } from '../guards/PublicRoute';
 import { TokenService } from '../services/Token';
 import { UserDocument } from '../db/schemas/User';
-import { TokenPair, ResponseBody, SignInResult } from '../types';
+import {
+  TokenPair,
+  ResponseBody,
+  SignInResult,
+  AffectedResult,
+} from '../types';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from '../decorators/ApiOkResponse';
 import { ApiErrorResponse } from '../decorators/ApiErrorResponse';
@@ -96,7 +101,7 @@ export class AuthController {
   public async logout(
     @Query('token') token: string,
     @Res() res: Response,
-  ): Promise<Response<ResponseBody<undefined>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     return this.authService.logout(token, res);
   }
 
