@@ -6,6 +6,7 @@ import { CreateTransport } from '../components/CreateTransport';
 import { EditTransport } from '../components/EditTransport';
 import { ProtectedRoute } from '../shared/ProtectedRoute/ProtectedRoute';
 import { Transports } from '../components/Transports';
+import { RentList } from '../components/RentList';
 
 const router = createBrowserRouter([
   {
@@ -25,8 +26,12 @@ const router = createBrowserRouter([
         element: <SignUp />,
       },
       {
-        path: 'dashboard',
-        element: <CreateTransport />,
+        path: 'transports/create',
+        element: (
+          <ProtectedRoute roles={['ADMIN']}>
+            <CreateTransport />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'transports/:id',
@@ -41,6 +46,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Transports />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'rent-list',
+        element: (
+          <ProtectedRoute roles={['USER']}>
+            <RentList />
           </ProtectedRoute>
         ),
       },
