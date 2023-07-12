@@ -8,18 +8,20 @@ import {
 } from '@nextui-org/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from '../../icons';
-import { useAppSelector } from '../../store/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '../../store/hooks/hooks';
 import { useLogoutMutation } from '../../store/api/main.api';
 import { useCallback } from 'react';
 import { IMutation } from '../../types/RTK';
 import { IAffectedResult, IResponse } from '../../types/Response';
 import { useErrorToast } from '../../hooks/useErrorToast';
 import { HttpStatus } from '../../types/HttpStatus';
+import { resetUser } from '../../store/reducers/user';
 
 export const Header = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.user);
   const [logout, { error, isLoading }] = useLogoutMutation();
+  const dispatch = useAppDispatch();
 
   const logoutHandler = useCallback(async () => {
     const token = localStorage.getItem('refreshToken');
@@ -31,6 +33,7 @@ export const Header = () => {
 
       if (response.data?.data?.isAffected) {
         localStorage.clear();
+        dispatch(resetUser());
         navigate('/signin');
       }
     }
@@ -57,7 +60,7 @@ export const Header = () => {
         {!user ? (
           <>
             <Button auto light>
-              <Link to="login">Login</Link>
+              <Link to="signin">Sign In</Link>
             </Button>
             <Button auto flat>
               <Link to="signup">Sign Up</Link>
