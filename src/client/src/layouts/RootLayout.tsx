@@ -2,12 +2,12 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Box } from '../shared/Box';
 import { useAppDispatch } from '../store/hooks/hooks';
-import { useMeQuery } from '../store/api/user.api';
+import { useLazyMeQuery, useMeQuery } from '../store/api/user.api';
 import { useEffect } from 'react';
 import { resetUser, setUser } from '../store/reducers/user';
 export default function RootLayout() {
   const dispatch = useAppDispatch();
-  const { data, isError } = useMeQuery();
+  const [getMe, { data, isError }] = useLazyMeQuery();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +20,14 @@ export default function RootLayout() {
       navigate('/signin');
     }
   }, [data, isError]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      getMe();
+    }
+  }, []);
 
   return (
     <>
