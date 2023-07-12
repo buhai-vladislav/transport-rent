@@ -72,11 +72,13 @@ export const RentList = () => {
           <Text h3>No rented transports...</Text>
         )}
       </Grid.Container>
-      <Pagination
-        total={data?.data?.pagination.totalPages}
-        page={page}
-        onChange={setPage}
-      />
+      {data?.data?.pagination && data?.data?.pagination?.totalPages > 0 && (
+        <Pagination
+          total={data?.data?.pagination.totalPages}
+          page={page}
+          onChange={setPage}
+        />
+      )}
     </RentListWrapper>
   );
 };
