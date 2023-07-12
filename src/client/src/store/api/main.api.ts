@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { IResponse } from '../../types/Response';
+import type { IAffectedResult, IResponse } from '../../types/Response';
 import type { IUser } from '../../types/User';
 import type { ISignIn, ISignInResponse, ISignUp } from '../../types/Auth';
 import { IImage } from '../../types/Image';
@@ -20,7 +20,7 @@ const baseQuery = fetchBaseQuery({
 export const mainApi = createApi({
   reducerPath: 'main',
   baseQuery,
-  tagTypes: ['Transport', 'Transports'],
+  tagTypes: ['Transport', 'Transports', 'RentInfo'],
   endpoints: (build) => ({
     signup: build.mutation<IResponse<IUser>, ISignUp>({
       query: ({ email, password, name, imageId }) => ({
@@ -51,8 +51,21 @@ export const mainApi = createApi({
         body: file,
       }),
     }),
+    logout: build.mutation<IResponse<IAffectedResult>, string>({
+      query: (token) => ({
+        url: 'auth/logout',
+        method: 'POST',
+        params: {
+          token,
+        },
+      }),
+    }),
   }),
 });
 
-export const { useSignupMutation, useSigninMutation, useUploadImageMutation } =
-  mainApi;
+export const {
+  useSignupMutation,
+  useSigninMutation,
+  useUploadImageMutation,
+  useLogoutMutation,
+} = mainApi;
