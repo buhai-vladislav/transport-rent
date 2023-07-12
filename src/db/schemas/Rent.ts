@@ -1,15 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from './User';
+import { User, UserDocument } from './User';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-import { Transport } from './Transport';
+import { Transport, TransportDocument } from './Transport';
 
 @Schema({ timestamps: true })
 export class Rent {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: User.name })
-  user: User;
+  user: UserDocument;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: Transport.name })
-  transport: Transport;
+  transport: TransportDocument;
 
   @Prop({ required: true, type: Date })
   fromDate: Date;
@@ -17,7 +17,7 @@ export class Rent {
   @Prop({ required: false, type: Date })
   toDate?: Date;
 
-  @Prop({ required: false, type: Date })
+  @Prop({ required: false, type: Date, default: null })
   stoppedAt?: Date;
 }
 
