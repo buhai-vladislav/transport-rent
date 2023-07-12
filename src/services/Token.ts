@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   HttpStatus,
-  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -28,11 +27,12 @@ export class TokenService {
   public async createTokenPair(payload: JwtPayload): Promise<TokenPair> {
     try {
       const accessToken = await this.jwtService.signAsync(payload, {
-        secret: process.env.ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.TOKEN_EXPIRATION_TIME,
+        secret: process.env.TOKEN_SECRET,
       });
       const refreshToken = await this.jwtService.signAsync(payload, {
         expiresIn: '7d',
-        secret: process.env.ACCESS_TOKEN_SECRET,
+        secret: process.env.TOKEN_SECRET,
       });
 
       return { accessToken, refreshToken };
@@ -88,7 +88,7 @@ export class TokenService {
   public async verifyToken(token: string): Promise<JwtPayload> {
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.ACCESS_TOKEN_SECRET,
+        secret: process.env.TOKEN_SECRET,
       });
 
       if (!payload) {

@@ -27,7 +27,7 @@ import { MinioClientModule } from './Minio';
       property: 'user',
     }),
     JwtModule.register({
-      secret: process.env.ACCESS_TOKEN_SECRET || 'SECRET',
+      secret: process.env.TOKEN_SECRET || 'SECRET',
       signOptions: {
         expiresIn: process.env.TOKEN_EXPIRATION_TIME || '24h',
       },
