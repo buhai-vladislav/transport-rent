@@ -5,17 +5,18 @@ import { validationSchema } from '../TransportForm/TransportForm.utils';
 import { ITransportFormProps } from '../TransportForm/TransportForm.props';
 import {
   useLazyGetSingleTransportQuery,
+  useRemoveTransportMutation,
   useUpdateTransportMutation,
 } from '../../store/api/transport.api';
 import { useErrorToast } from '../../hooks/useErrorToast';
 import { HttpStatus } from '../../types/HttpStatus';
 import { useUploadImage } from '../../hooks/useUploadImage';
 import AvatarEditor from 'react-avatar-editor';
-import { IResponse } from '../../types/Response';
+import { IAffectedResult, IResponse } from '../../types/Response';
 import { ITransport, LicenceType, TransportType } from '../../types/Transport';
 import { IMutation } from '../../types/RTK';
 import { toast } from 'react-toastify';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Loading, Modal, Text } from '@nextui-org/react';
 import { useAppSelector } from '../../store/hooks/hooks';
 import {
@@ -33,10 +34,27 @@ export const EditTransport = () => {
   const [image, setImage] = useState<File | string>('');
   const [opened, setOpened] = useState(false);
   const imageRef = useRef<AvatarEditor>(null);
+  const navigate = useNavigate();
   const [updateTransport, { error }] = useUpdateTransportMutation();
   const [data, uploadImage] = useUploadImage();
   const [getRentInfo, { data: rentInfo }] = useLazyGetRentInfoQuery();
   const [stopRent, { isLoading }] = useUpdateRentMutation();
+  const [removeTransport, { isLoading: isRemoving, error: rError }] =
+    useRemoveTransportMutation();
+
+  const removeHandler = useCallback(async () => {
+    if (id) {
+      const response: IMutation<IResponse<IAffectedResult>> =
+        await removeTransport(id);
+      if (response?.data?.data) {
+        toast('Transport removed successfully', {
+          type: 'success',
+          position: 'bottom-center',
+        });
+        navigate('/transports');
+      }
+    }
+  }, []);
 
   const stopRentHandler = useCallback(async () => {
     if (id && rentInfo?.data?._id) {
@@ -138,6 +156,17 @@ export const EditTransport = () => {
       type: 'error',
     },
   );
+  useErrorToast(
+    rError,
+    [
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+      { status: HttpStatus.BAD_REQUEST },
+    ],
+    {
+      position: 'bottom-center',
+      type: 'error',
+    },
+  );
 
   useEffect(() => {
     if (transportData?.data) {
@@ -183,6 +212,10 @@ export const EditTransport = () => {
     return <Loading size="xl" />;
   }
 
+  if (rentInfo?.data?.stoppedAt === null) {
+    console.log('some', rentInfo.data);
+  }
+
   return (
     <>
       <TransportForm
@@ -193,12 +226,33 @@ export const EditTransport = () => {
         disabled={user?.role !== 'ADMIN'}
         id={id}
         rented={transportData?.data?.status !== 'FREE'}
-        unRentButton={
-          rentInfo?.data ? (
+        buttons={
+          rentInfo?.data?.stoppedAt === null && user?.role === 'USER' ? (
             <Button color="warning" type="button" onPress={openModal}>
               Stop rent
             </Button>
-          ) : null
+          ) : (
+            user?.role === 'ADMIN' && (
+              <Button.Group>
+                <Button
+                  color="primary"
+                  type="button"
+                  onPress={removeHandler}
+                  css={{ width: '50%' }}
+                >
+                  {isRemoving ? <Loading size="sm" /> : 'Remove'}
+                </Button>
+                <Button
+                  className="submit"
+                  type="submit"
+                  ghost
+                  css={{ width: '50%' }}
+                >
+                  {formik.isSubmitting ? <Loading size="sm" /> : 'Update'}
+                </Button>
+              </Button.Group>
+            )
+          )
         }
       />
       <Modal

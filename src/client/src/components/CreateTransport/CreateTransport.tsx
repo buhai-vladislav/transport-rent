@@ -12,6 +12,7 @@ import { IResponse } from '../../types/Response';
 import { ITransport, LicenceType, TransportType } from '../../types/Transport';
 import { IMutation } from '../../types/RTK';
 import { toast } from 'react-toastify';
+import { Button, Loading } from '@nextui-org/react';
 
 export const CreateTransport = () => {
   const [image, setImage] = useState<File | string>('');
@@ -94,6 +95,11 @@ export const CreateTransport = () => {
       image={image}
       setImage={setImage}
       imageRef={imageRef}
+      buttons={
+        <Button className="submit" type="submit" ghost css={{ width: '100%' }}>
+          {formik.isSubmitting ? <Loading size="sm" /> : 'Create'}
+        </Button>
+      }
     />
   );
 };

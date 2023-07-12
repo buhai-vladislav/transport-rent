@@ -24,7 +24,7 @@ interface ITransportProps {
   imageRef: RefObject<AvatarEditor>;
   id?: string;
   rented?: boolean;
-  unRentButton?: ReactNode;
+  buttons?: ReactNode;
 }
 
 export type { ITransportFormProps, ITransportProps };

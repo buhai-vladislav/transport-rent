@@ -32,7 +32,7 @@ export const TransportForm: FC<ITransportProps> = ({
   imageRef,
   id,
   rented,
-  unRentButton,
+  buttons,
 }) => {
   const [opened, setOpened] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -235,16 +235,12 @@ export const TransportForm: FC<ITransportProps> = ({
             value={formik.values.description}
             disabled={disabled}
           />
-          {disabled ? (
-            unRentButton ?? (
-              <Button type="button" onPress={openModal} disabled={rented}>
-                {rented ? 'In rent' : 'Rent'}
-              </Button>
-            )
-          ) : (
-            <Button className="submit" type="submit" ghost>
-              {formik.isSubmitting ? <Loading size="sm" /> : 'Submit'}
+          {!buttons ? (
+            <Button type="button" onPress={openModal} disabled={rented}>
+              {rented ? 'In rent' : 'Rent'}
             </Button>
+          ) : (
+            buttons
           )}
         </div>
       </div>
