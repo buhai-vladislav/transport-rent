@@ -1,4 +1,4 @@
-import { IPaginated, IResponse } from '../../types/Response';
+import { IAffectedResult, IPaginated, IResponse } from '../../types/Response';
 import {
   ITransport,
   ITransportCreate,
@@ -45,6 +45,12 @@ const transportApi = mainApi.injectEndpoints({
         params,
       }),
     }),
+    removeTransport: build.mutation<IResponse<IAffectedResult>, string>({
+      query: (id) => ({
+        url: `transports/${id}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
@@ -55,4 +61,5 @@ export const {
   useUpdateTransportMutation,
   useGetTransportsQuery,
   useLazyGetTransportsQuery,
+  useRemoveTransportMutation,
 } = transportApi;
