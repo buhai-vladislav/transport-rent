@@ -8,7 +8,12 @@ import { Hashing } from '../utils/Hashing';
 import { ResponseResult } from '../utils/Response';
 import { TokenService } from './Token';
 import { Token } from '../db/schemas/Token';
-import { ResponseBody, SignInResult, JwtPayload } from '../types';
+import {
+  ResponseBody,
+  SignInResult,
+  JwtPayload,
+  AffectedResult,
+} from '../types';
 import { getImageRootPath } from '../utils/utils';
 
 @Injectable()
@@ -107,7 +112,7 @@ export class AuthService {
   public async logout(
     refreshToken: string,
     res: Response,
-  ): Promise<Response<ResponseBody<undefined>>> {
+  ): Promise<Response<ResponseBody<AffectedResult>>> {
     try {
       const token = await this.tokenModel.findOneAndDelete({
         $and: [{ token: { $eq: refreshToken } }],
@@ -125,7 +130,7 @@ export class AuthService {
         res,
         HttpStatus.OK,
         'Logout successfully.',
-        undefined,
+        { isAffected: !!token },
       );
     } catch (error) {
       return ResponseResult.sendError(
