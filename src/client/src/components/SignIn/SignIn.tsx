@@ -60,10 +60,6 @@ export const SignIn = () => {
     { position: 'bottom-center', type: 'error' },
   );
 
-  useEffect(() => {
-    console.log(error);
-  }, [error]);
-
   return (
     <FormWrapper onSubmit={formik.handleSubmit}>
       <Text h3>Sign In</Text>

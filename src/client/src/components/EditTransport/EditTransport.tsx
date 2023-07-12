@@ -212,10 +212,6 @@ export const EditTransport = () => {
     return <Loading size="xl" />;
   }
 
-  if (rentInfo?.data?.stoppedAt === null) {
-    console.log('some', rentInfo.data);
-  }
-
   return (
     <>
       <TransportForm
