@@ -29,6 +29,7 @@ import {
   TransportType,
 } from '../../types/Transport';
 import { useAppSelector } from '../../store/hooks/hooks';
+import { convertType } from './Transport.utils';
 
 export const Transports = () => {
   const [page, setPage] = useState(1);
@@ -77,32 +78,30 @@ export const Transports = () => {
 
   useEffect(() => {
     refetchTransports({
+      page: 1,
+      limit: 6,
+      search: searchDebounce,
+      type: convertType(type),
+      licenceType: convertType(licenceType),
+      maxSpeed: maxSpeedDebounce,
+      sortKey: convertType(sortKey),
+      sortOrder: convertType(sortOrder),
+    });
+    setPage(1);
+  }, [searchDebounce, type, licenceType, maxSpeedDebounce, sortKey, sortOrder]);
+
+  useEffect(() => {
+    refetchTransports({
       page,
       limit: 6,
       search: searchDebounce,
-      type: type
-        ? Array.from(type as unknown as Set<string>)[0].split('#')[0]
-        : undefined,
-      licenceType: licenceType
-        ? Array.from(licenceType as unknown as Set<string>)[0].split('#')[0]
-        : undefined,
+      type: convertType(type),
+      licenceType: convertType(licenceType),
       maxSpeed: maxSpeedDebounce,
-      sortKey: sortKey
-        ? Array.from(sortKey as unknown as Set<string>)[0].split('#')[0]
-        : undefined,
-      sortOrder: sortOrder
-        ? Array.from(sortOrder as unknown as Set<string>)[0].split('#')[0]
-        : undefined,
+      sortKey: convertType(sortKey),
+      sortOrder: convertType(sortOrder),
     });
-  }, [
-    page,
-    searchDebounce,
-    type,
-    licenceType,
-    maxSpeedDebounce,
-    sortKey,
-    sortOrder,
-  ]);
+  }, [page]);
 
   return (
     <TransportsWrapper css={{ height: isFetching ? '65vh' : 'auto' }}>
