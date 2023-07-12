@@ -10,14 +10,20 @@ const rentApi = mainApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Transport'],
+      invalidatesTags: ['Transport', 'RentInfo'],
     }),
-    updateRent: build.mutation<IResponse<IRent>, IRentBody>({
-      query: (body) => ({
-        url: 'rent',
+    updateRent: build.mutation<IResponse<IRent>, IRentBody & { id: string }>({
+      query: ({ id, fromDate, toDate, transportId, stoppedAt }) => ({
+        url: `rent/${id}`,
         method: 'PUT',
-        body,
+        body: {
+          fromDate,
+          toDate,
+          transportId,
+          stoppedAt,
+        },
       }),
+      invalidatesTags: ['Transport', 'RentInfo'],
     }),
     getRentList: build.query<IResponse<IPaginated<IRent>>, IRentWhere>({
       query: (params) => ({
@@ -26,11 +32,12 @@ const rentApi = mainApi.injectEndpoints({
         params,
       }),
     }),
-    getRentInfo: build.query<IResponse<IAffectedResult>, string>({
+    getRentInfo: build.query<IResponse<IRent>, string>({
       query: (id) => ({
         url: `rent/${id}`,
         method: 'GET',
       }),
+      providesTags: ['RentInfo'],
     }),
   }),
 });
