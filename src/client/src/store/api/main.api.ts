@@ -30,34 +30,37 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-  console.log('query result');
-  if (result.error && result.error.status === 401) {
-    console.log('error');
-    const refreshToken = localStorage.getItem('refreshToken');
-    const refreshResult = await baseQuery(
-      { url: `/auth/refresh?token=${refreshToken}`, method: 'POST' },
-      api,
-      extraOptions,
-    );
-    if (refreshResult.data) {
-      const refeshTokenResult =
-        refreshResult.data as IResponse<ISignInResponse>;
-
-      if (refeshTokenResult?.data) {
-        localStorage.setItem(
-          'accessToken',
-          refeshTokenResult?.data?.accessToken,
-        );
-        localStorage.setItem(
-          'refreshToken',
-          refeshTokenResult.data.refreshToken,
-        );
-        result = await baseQuery(args, api, extraOptions);
+  if (typeof args !== 'string') {
+    if (
+      result.error &&
+      result.error.status === 401 &&
+      args.url !== 'auth/signin'
+    ) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshResult = await baseQuery(
+        { url: `/auth/refresh?token=${refreshToken}`, method: 'POST' },
+        api,
+        extraOptions,
+      );
+      if (refreshResult.data) {
+        const refeshTokenResult =
+          refreshResult.data as IResponse<ISignInResponse>;
+        if (refeshTokenResult?.data) {
+          localStorage.setItem(
+            'accessToken',
+            refeshTokenResult?.data?.accessToken,
+          );
+          localStorage.setItem(
+            'refreshToken',
+            refeshTokenResult.data.refreshToken,
+          );
+          result = await baseQuery(args, api, extraOptions);
+        }
+      } else {
+        localStorage.clear();
+        api.dispatch(resetUser());
+        window.location.href = '/signin';
       }
-    } else {
-      localStorage.clear();
-      api.dispatch(resetUser());
-      window.location.href = '/signin';
     }
   }
 
