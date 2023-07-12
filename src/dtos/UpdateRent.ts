@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -8,17 +8,17 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateRentDto {
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   @ApiProperty({ example: new Date() })
   fromDate?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   @ApiProperty({ example: new Date() })
   toDate?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   @ApiProperty({ example: new Date() })
   stoppedAt?: Date;
 
