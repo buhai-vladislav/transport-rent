@@ -32,6 +32,7 @@ export const TransportForm: FC<ITransportProps> = ({
   imageRef,
   id,
   rented,
+  unRentButton,
 }) => {
   const [opened, setOpened] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -235,9 +236,11 @@ export const TransportForm: FC<ITransportProps> = ({
             disabled={disabled}
           />
           {disabled ? (
-            <Button type="button" onPress={openModal} disabled={rented}>
-              {rented ? 'In rent' : 'Rent'}
-            </Button>
+            unRentButton ?? (
+              <Button type="button" onPress={openModal} disabled={rented}>
+                {rented ? 'In rent' : 'Rent'}
+              </Button>
+            )
           ) : (
             <Button className="submit" type="submit" ghost>
               {formik.isSubmitting ? <Loading size="sm" /> : 'Submit'}
@@ -271,7 +274,7 @@ export const TransportForm: FC<ITransportProps> = ({
             minDate={new Date()}
           />
           <Input
-            value={getDiffInDays * formik.values.price}
+            value={getDiffInDays * formik.values.price * 24}
             disabled
             labelLeft="Price"
             labelRight="$"

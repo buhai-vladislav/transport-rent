@@ -1,5 +1,5 @@
 import { FormikProps } from 'formik';
-import { Dispatch, RefObject, SetStateAction } from 'react';
+import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { LicenceType, TransportType } from '../../types/Transport';
 
@@ -24,6 +24,7 @@ interface ITransportProps {
   imageRef: RefObject<AvatarEditor>;
   id?: string;
   rented?: boolean;
+  unRentButton?: ReactNode;
 }
 
 export type { ITransportFormProps, ITransportProps };
