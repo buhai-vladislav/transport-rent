@@ -12,7 +12,11 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "serve": "cd src/client && npm run build && cd ../../ && npm run start",
+    "services:start": "docker-compose up",
+    "services:stop": "docker-compose down",
+    "services:reset": "docker-compose down -v"
   },
   "dependencies": {
     "@nestjs/class-validator": "^0.13.4",
