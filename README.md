@@ -1,73 +1,47 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+## **Description**
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+---
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The simple project to rent transport, create transport as an admin. Created basic `JWT` auth flow with access and refresh tokens. Used `MongoDB` as data storage and `Minio` for saving images. Client writed on `React` library and used `NextUI` for UI component and `styled-components` for additional styling. Used `Redux` as state manager and `RTK` for working with actions and api service.
 
-## Description
+## **Prerequisites**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Installation
+- node >= 18.0
+- docker
 
-```bash
-$ npm install
-```
+## **Run application**
 
-## Running the app
+---
 
-```bash
-# development
-$ npm run start
+1. Change your credential in the `.env` file. Also you can use default but it`s not secure.
 
-# watch mode
-$ npm run start:dev
+2. Setup your `docker` image by `docker-compose` file, running next command:
 
-# production mode
-$ npm run start:prod
-```
+   ```properties
+   npm run services:start
+   ```
 
-## Test
+3. Open a `http://localhost:9001/` url and login.
 
-```bash
-# unit tests
-$ npm run test
+4. Create a access key. Open an `Access keys` tab:
+   ![Access keys](./assets/access.png)
+   Click on `Create key` button:
+   ![Create key_1](./assets/create_1.png)
+   Create keys and copy it to `.env` file as `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY`, save this key to file.
+   ![Create key_2](./assets/create_3.png)
 
-# e2e tests
-$ npm run test:e2e
+5. Install your packages for BE part and for FE part open the `src/client` folder:
 
-# test coverage
-$ npm run test:cov
-```
+   ```properties
+   npm i
+   ```
 
-## Support
+6. In the root folder run next command for starting application:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+   ```properties
+   npm run serve
+   ```
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+7. Now you can open `http://localhost:{YOUR_PORT}` to see the result.
